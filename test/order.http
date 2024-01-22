@@ -1,0 +1,23 @@
+POST http://localhost:3000/api/order/
+content-type: application/json
+
+{
+  "dishes": [
+    {"id":"32ca1e58-46ef-475b-a7d4-847bc92f89a2",
+    "price": 6.0,
+	"quantity": 3},
+   {"id":"f309666d-38d1-48f7-9e31-91458aebcd5a",
+    "price": 6.0,
+	"quantity": 2}
+  ],
+		"tax":       0.10
+}
+###
+
+DELETE  http://localhost:3000/api/order/65ae9475beddb69b0742bed8
+content-type: application/json
+
+###
+
+GET   http://localhost:3000/api/order
+content-type: application/json

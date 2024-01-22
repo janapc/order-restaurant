@@ -1,0 +1,33 @@
+POST http://localhost:3000/api/dish/
+content-type: application/json
+
+{
+  "name":        "Brigadeiro",
+		"description": "delicioso brigadeiro",
+		"price":       5.99
+}
+
+###
+
+PATCH  http://localhost:3000/api/dish/0cfba6d9-d3e9-4e14-bce5-7c0f1e31d1be
+content-type: application/json
+
+{
+  "quantity": 6
+}
+
+###
+
+DELETE   http://localhost:3000/api/dish/0cfba6d9-d3e9-4e14-bce5-7c0f1e31d1be
+
+###
+
+
+GET  http://localhost:3000/api/dish/
+content-type: application/json
+
+###
+
+
+GET  http://localhost:3000/api/dish/32ca1e58-46ef-475b-a7d4-847bc92f89a2
+content-type: application/json

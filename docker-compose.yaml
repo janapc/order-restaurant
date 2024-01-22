@@ -1,0 +1,35 @@
+version: '3.3'
+services:
+  mongodb:
+    image: mongo:7.0.2
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: order_restaurant
+    ports:
+      - '27017:27017'
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_DATABASE: order_restaurant
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
+    ports:
+      - 3306:3306
+    volumes:
+      - ./.docker/mysql:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/mysql
+    secrets:
+      - mysql_root_password
+      - mysql_password
+
+secrets:
+  mysql_root_password:
+    file: ./.docker/mysql_root_password.txt
+  mysql_password:
+    file: ./.docker/mysql_password.txt
+volumes:
+  db_data:
