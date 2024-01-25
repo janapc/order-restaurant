@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"errors"
 	"time"
 )
 
@@ -18,17 +19,35 @@ type Order struct {
 	TotalPrice float64     `json:"total_price"`
 	CreatedAt  time.Time   `json:"created_at"`
 	CanceledAt *time.Time  `json:"canceled_at"`
+	UpdatedAt  time.Time   `json:"updated_at"`
 }
 
-func NewOrder(dishes []DishOrder, tax float64) *Order {
+func NewOrder(dishes []DishOrder, tax float64, status string) (*Order, error) {
 	order := &Order{
 		Dishes:     dishes,
 		Tax:        tax,
+		Status:     status,
 		CreatedAt:  time.Now(),
-		Status:     "CREATED",
 		CanceledAt: nil,
+		UpdatedAt:  time.Now(),
 	}
-	return order
+	if err := order.IsValid(); err != nil {
+		return nil, err
+	}
+	return order, nil
+}
+
+func (o *Order) IsValid() error {
+	if o.Status == "" {
+		return errors.New("the status is required")
+	}
+	if len(o.Dishes) == 0 {
+		return errors.New("the dishes is required")
+	}
+	if o.Tax < 0.0 {
+		return errors.New("the tax is required and has to be greater than 0 or equal 0")
+	}
+	return nil
 }
 
 func (o *Order) CalculateTotalPrice() {

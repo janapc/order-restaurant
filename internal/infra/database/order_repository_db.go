@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,16 +13,6 @@ import (
 
 	"github.com/janapc/order-restaurant/internal/entity"
 )
-
-type OrderRepositoryDB struct {
-	DB *mongo.Database
-}
-
-func NewOrderRepositoryDB(db *mongo.Database) *OrderRepositoryDB {
-	return &OrderRepositoryDB{
-		DB: db,
-	}
-}
 
 type OrderDB struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty"`
@@ -56,11 +47,22 @@ func (o *OrderRepositoryDB) ConvertDBToEntity(orderDb *OrderDB) entity.Order {
 	}
 }
 
+type OrderRepositoryDB struct {
+	DB *mongo.Database
+}
+
+func NewOrderRepositoryDB(db *mongo.Database) *OrderRepositoryDB {
+	return &OrderRepositoryDB{
+		DB: db,
+	}
+}
+
 var ERROR_ORDER_DB = "internal Server Error"
 
-func (o *OrderRepositoryDB) Create(order *entity.Order) error {
+func (o *OrderRepositoryDB) Save(order *entity.Order) error {
 	orderDb := o.ConvertEntityToDB(order)
-	result, err := o.DB.Collection("orders").InsertOne(context.TODO(), orderDb)
+	collectionName := os.Getenv("COLLECTION_MONGO_ORDERS")
+	result, err := o.DB.Collection(collectionName).InsertOne(context.TODO(), orderDb)
 	if err != nil {
 		slog.Error(err.Error())
 		return errors.New(ERROR_ORDER_DB)
@@ -70,6 +72,7 @@ func (o *OrderRepositoryDB) Create(order *entity.Order) error {
 }
 
 func (o *OrderRepositoryDB) Cancel(id string) error {
+	collectionName := os.Getenv("COLLECTION_MONGO_ORDERS")
 	idDb, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		slog.Error(err.Error())
@@ -77,7 +80,7 @@ func (o *OrderRepositoryDB) Cancel(id string) error {
 	}
 	filter := bson.D{{Key: "_id", Value: idDb}}
 	update := bson.D{{Key: "$set", Value: bson.M{"canceled_at": time.Now(), "status": "CANCELED"}}}
-	_, err = o.DB.Collection("orders").UpdateOne(context.TODO(), filter, update)
+	_, err = o.DB.Collection(collectionName).UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		slog.Error(err.Error())
 		return errors.New(ERROR_ORDER_DB)
@@ -86,19 +89,55 @@ func (o *OrderRepositoryDB) Cancel(id string) error {
 }
 
 func (o *OrderRepositoryDB) FindAll() ([]entity.Order, error) {
+	collectionName := os.Getenv("COLLECTION_MONGO_ORDERS")
 	filter := bson.D{{}}
-	cursor, err := o.DB.Collection("orders").Find(context.TODO(), filter)
+	cursor, err := o.DB.Collection(collectionName).Find(context.TODO(), filter)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, errors.New(ERROR_ORDER_DB)
 	}
 	var ordersDb []OrderDB
 	if err = cursor.All(context.TODO(), &ordersDb); err != nil {
-		return nil, err
+		slog.Error(err.Error())
+		return nil, errors.New(ERROR_ORDER_DB)
 	}
 	var orders []entity.Order
 	for _, order := range ordersDb {
 		orders = append(orders, o.ConvertDBToEntity(&order))
 	}
-	return orders, err
+	return orders, nil
+}
+
+func (o *OrderRepositoryDB) FindById(id string) (*entity.Order, error) {
+	collectionName := os.Getenv("COLLECTION_MONGO_ORDERS")
+	idDb, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, errors.New(ERROR_ORDER_DB)
+	}
+	filter := bson.D{{Key: "_id", Value: idDb}}
+	var order *entity.Order
+	err = o.DB.Collection(collectionName).FindOne(context.TODO(), filter).Decode(&order)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, errors.New(ERROR_ORDER_DB)
+	}
+	return order, nil
+}
+
+func (o *OrderRepositoryDB) Status(status string, id string) error {
+	collectionName := os.Getenv("COLLECTION_MONGO_ORDERS")
+	idDb, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		slog.Error(err.Error())
+		return errors.New(ERROR_ORDER_DB)
+	}
+	filter := bson.D{{Key: "_id", Value: idDb}}
+	update := bson.D{{Key: "$set", Value: bson.M{"status": status}}}
+	_, err = o.DB.Collection(collectionName).UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		slog.Error(err.Error())
+		return errors.New(ERROR_ORDER_DB)
+	}
+	return nil
 }

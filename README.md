@@ -4,17 +4,16 @@
   <img alt="Language top" src="https://img.shields.io/github/languages/top/janapc/order-restaurant"/>
   <img alt="Repo size" src="https://img.shields.io/github/repo-size/janapc/order-restaurant"/>
 
-<a href="#project">Project</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+<a href="#description">Description</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
 <a href="#requirement">Requirement</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-<a href="#run-project">Run Project</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-<a href="#request-api">Request API</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-<a href="#technologies">Technologies</a>
+<a href="#usage">Usage</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+<a href="#resources">Resources</a>
 
 </div>
 
 ## Project
 
-Api to manager order in restaurant using clean arch.
+System to manager a restaurant.
 
 ## Requirement
 
@@ -28,16 +27,20 @@ Inside **.docker** create a first file mysql_password.txt and put your password 
 In root folder create a file **.env** with:
 
 ```env
-MYSQL_URL= # mysqldb url
-MONGO_URL= # mongodb url
+MONGO_URL= //mongodb url
+MONGO_DATABASE = //mongodb database name
+MYSQL_URL= //mysql url
+COLLECTION_MONGO_ORDERS= //mongodb collection
+RABBITMQ_CONNECTION=//rabbitmq url
+RABBITMQ_QUEUE_NAME=//queue name url
 ```
 
-## Run Project
+## Usage
 
 Start Docker in your machine and run this commands in your terminal:
 
 ```sh
-## up mysql
+## up services
 ❯ docker compose up -d
 
 ## run this command to install dependencies:
@@ -48,16 +51,16 @@ Start Docker in your machine and run this commands in your terminal:
 
 ```
 
-## Request API
-
 Examples stay inside **test** folder
 
-## Technologies
+## Resources
 
-- golang
-- mysql
-- docker
-- mongo
+- Golang
+- Mysql
+- Docker
+- Mongo
+- Fiber
+- Rabbitmq
 
 <div align="center">
 

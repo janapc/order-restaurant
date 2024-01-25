@@ -9,7 +9,9 @@ type DishRepositoryInterface interface {
 }
 
 type OrderRepositoryInterface interface {
-	Create(order *Order) error
+	Save(order *Order) error
 	Cancel(id string) error
 	FindAll() ([]Order, error)
+	FindById(id string) (*Order, error)
+	Status(status string, id string) error
 }
