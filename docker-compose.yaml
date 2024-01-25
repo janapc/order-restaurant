@@ -26,6 +26,18 @@ services:
       - mysql_root_password
       - mysql_password
 
+  rabbitmq:
+    image: rabbitmq:3.8.16-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=/
+
 secrets:
   mysql_root_password:
     file: ./.docker/mysql_root_password.txt

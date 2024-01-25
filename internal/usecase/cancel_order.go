@@ -1,6 +1,9 @@
 package usecase
 
 import (
+	"errors"
+	"slices"
+
 	"github.com/janapc/order-restaurant/internal/entity"
 )
 
@@ -19,7 +22,15 @@ func NewCancelOrderUseCase(orderRepository entity.OrderRepositoryInterface) *Can
 }
 
 func (c *CancelOrderUseCase) Execute(input CancelOrderInputDTO) error {
-	err := c.OrderRepository.Cancel(input.ID)
+	order, err := c.OrderRepository.FindById(input.ID)
+	statusInvalid := []string{"PROCESSING", "SENT"}
+	if err != nil {
+		return err
+	}
+	if slices.Contains(statusInvalid, order.Status) {
+		return errors.New("the order cannot be canceled")
+	}
+	err = c.OrderRepository.Cancel(input.ID)
 	if err != nil {
 		return err
 	}

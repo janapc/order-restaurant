@@ -6,18 +6,23 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/janapc/order-restaurant/internal/entity"
+	"github.com/janapc/order-restaurant/internal/infra/queue"
 	"github.com/janapc/order-restaurant/internal/usecase"
 )
 
 type Controller struct {
 	DishRepository  entity.DishRepositoryInterface
 	OrderRepository entity.OrderRepositoryInterface
+	Queue           queue.QueueInterface
 }
 
-func NewController(dishRepository entity.DishRepositoryInterface, orderRepository entity.OrderRepositoryInterface) *Controller {
+func NewController(dishRepository entity.DishRepositoryInterface,
+	orderRepository entity.OrderRepositoryInterface,
+	queue queue.QueueInterface) *Controller {
 	return &Controller{
 		DishRepository:  dishRepository,
 		OrderRepository: orderRepository,
+		Queue:           queue,
 	}
 }
 
@@ -31,7 +36,7 @@ func (c *Controller) RegisterDish(ctx *fiber.Ctx) error {
 	output, err := usecase.Execute(input)
 	if err != nil {
 		if err.Error() == "internal Server Error" {
-			ctx.Status(fiber.StatusInternalServerError)
+			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
@@ -51,7 +56,7 @@ func (c *Controller) UpdateDish(ctx *fiber.Ctx) error {
 	err := usecase.Execute(input)
 	if err != nil {
 		if err.Error() == "internal Server Error" {
-			ctx.Status(fiber.StatusInternalServerError)
+			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
@@ -67,7 +72,7 @@ func (c *Controller) RemoveDish(ctx *fiber.Ctx) error {
 	err := usecase.Execute(input)
 	if err != nil {
 		if err.Error() == "internal Server Error" {
-			ctx.Status(fiber.StatusInternalServerError)
+			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
@@ -80,7 +85,7 @@ func (c *Controller) FindAllDish(ctx *fiber.Ctx) error {
 	output, err := usecase.Execute()
 	if err != nil {
 		if err.Error() == "internal Server Error" {
-			ctx.Status(fiber.StatusInternalServerError)
+			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
@@ -97,7 +102,7 @@ func (c *Controller) FindByIdDish(ctx *fiber.Ctx) error {
 	output, err := usecase.Execute(input)
 	if err != nil {
 		if err.Error() == "internal Server Error" {
-			ctx.Status(fiber.StatusInternalServerError)
+			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
@@ -112,11 +117,11 @@ func (c *Controller) CreateOrder(ctx *fiber.Ctx) error {
 		slog.Error(err.Error())
 		return ctx.Status(fiber.StatusBadRequest).SendString("Body is wrong")
 	}
-	usecase := usecase.NewCreateOrderUseCase(c.OrderRepository, c.DishRepository)
+	usecase := usecase.NewCreateOrderUseCase(c.OrderRepository, c.DishRepository, c.Queue)
 	output, err := usecase.Execute(input)
 	if err != nil {
 		if err.Error() == "internal Server Error" {
-			ctx.Status(fiber.StatusInternalServerError)
+			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
@@ -133,7 +138,7 @@ func (c *Controller) CancelOrder(ctx *fiber.Ctx) error {
 	err := usecase.Execute(input)
 	if err != nil {
 		if err.Error() == "internal Server Error" {
-			ctx.Status(fiber.StatusInternalServerError)
+			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
@@ -146,7 +151,7 @@ func (c *Controller) FindAllOrders(ctx *fiber.Ctx) error {
 	output, err := usecase.Execute()
 	if err != nil {
 		if err.Error() == "internal Server Error" {
-			ctx.Status(fiber.StatusInternalServerError)
+			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}

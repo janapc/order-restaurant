@@ -3,18 +3,15 @@ content-type: application/json
 
 {
   "dishes": [
-    {"id":"32ca1e58-46ef-475b-a7d4-847bc92f89a2",
+    {"id":"f4560993-2038-4e2c-8524-5b88faeecf77",
     "price": 6.0,
-	"quantity": 3},
-   {"id":"f309666d-38d1-48f7-9e31-91458aebcd5a",
-    "price": 6.0,
-	"quantity": 2}
+	"quantity": 3}
   ],
 		"tax":       0.10
 }
 ###
 
-DELETE  http://localhost:3000/api/order/65ae9475beddb69b0742bed8
+DELETE  http://localhost:3000/api/order/65b2bf11ae4696acdd36edca
 content-type: application/json
 
 ###

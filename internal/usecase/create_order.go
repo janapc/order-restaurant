@@ -1,9 +1,11 @@
 package usecase
 
 import (
+	"os"
 	"time"
 
 	"github.com/janapc/order-restaurant/internal/entity"
+	"github.com/janapc/order-restaurant/internal/infra/queue"
 )
 
 type CreateOrderInputDTO struct {
@@ -24,12 +26,16 @@ type CreateOrderOutputDTO struct {
 type CreateOrderUseCase struct {
 	OrderRepository entity.OrderRepositoryInterface
 	DishRepository  entity.DishRepositoryInterface
+	Queue           queue.QueueInterface
 }
 
-func NewCreateOrderUseCase(orderRepository entity.OrderRepositoryInterface, dishRepository entity.DishRepositoryInterface) *CreateOrderUseCase {
+func NewCreateOrderUseCase(orderRepository entity.OrderRepositoryInterface,
+	dishRepository entity.DishRepositoryInterface,
+	queue queue.QueueInterface) *CreateOrderUseCase {
 	return &CreateOrderUseCase{
 		OrderRepository: orderRepository,
 		DishRepository:  dishRepository,
+		Queue:           queue,
 	}
 }
 
@@ -41,18 +47,23 @@ func (c *CreateOrderUseCase) Execute(input CreateOrderInputDTO) (*CreateOrderOut
 			return nil, err
 		}
 		dishes = append(dishes, entity.DishOrder{
-			ID:       dishDB.ID,
+			ID:       dish.ID,
 			Quantity: dish.Quantity,
 			Price:    dishDB.Price,
 		})
 	}
 	input.Dishes = dishes
-	order := entity.NewOrder(input.Dishes, input.Tax)
-	order.CalculateTotalPrice()
-	err := c.OrderRepository.Create(order)
+	order, err := entity.NewOrder(input.Dishes, input.Tax, "PENDING")
 	if err != nil {
 		return nil, err
 	}
+	order.CalculateTotalPrice()
+	err = c.OrderRepository.Save(order)
+	if err != nil {
+		return nil, err
+	}
+	queueName := os.Getenv("RABBITMQ_QUEUE_NAME")
+	c.Queue.Publish(order.ID, "", queueName)
 	return &CreateOrderOutputDTO{
 		ID:         order.ID,
 		Dishes:     order.Dishes,
