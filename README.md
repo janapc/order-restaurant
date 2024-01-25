@@ -11,9 +11,9 @@
 
 </div>
 
-## Project
+## Description
 
-System to manager a restaurant.
+System to manager a restaurant and orders using rabbitmq and databases.
 
 ## Requirement
 
